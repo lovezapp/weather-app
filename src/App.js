@@ -1,14 +1,11 @@
 import React, { Component } from 'react';
 import './App.css';
-import xhr from 'xhr';
 import { connect } from 'react-redux';
 import {
     changeLocation,
-    setData,
-    setDates,
-    setTemps,
     setSelectedDate,
     setSelectedTemp,
+    fetchData,
 } from './actions';
 import Plot from './Plot.js';
 import moment from 'moment';
@@ -18,30 +15,13 @@ class App extends Component {
         units: 'metric',
     };
 
-    fetchData = (evt) => {
+    getMapData = (evt) => {
         evt.preventDefault();
         const apiPrefix = 'http://api.openweathermap.org/data/2.5/forecast?q=';
         const apiKey = 'f8de51579e911250fde04d347f32c5ea';
         const location = encodeURIComponent(this.props.location);
         const url = apiPrefix + location + '&APPID=' + apiKey + '&units=' + this.state.units;
-        xhr({
-            url: url,
-        }, (err, data) => {
-            const body = JSON.parse(data.body);
-            const list = body.list;
-            const dates = [];
-            const temps = [];
-            list.forEach((el, i, arr) => {
-                dates.push(arr[i].dt_txt);
-                temps.push(arr[i].main.temp);
-            });
-
-            this.props.dispatch(setData(body));
-            this.props.dispatch(setDates(dates));
-            this.props.dispatch(setTemps(temps));
-            this.props.dispatch(setSelectedDate(''));
-            this.props.dispatch(setSelectedTemp(null));
-        });
+        this.props.dispatch(fetchData(url));
     };
 
     changeThisLocation = (evt) => {
@@ -73,7 +53,7 @@ class App extends Component {
         return (
             <div>
                 <h1>Weather</h1>
-                <form onSubmit={this.fetchData}>
+                <form onSubmit={this.getMapData}>
                 <label>I want to know the weather for
                   <input
                       placeholder={"City, Country"}
